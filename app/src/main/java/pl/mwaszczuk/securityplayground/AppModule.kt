@@ -11,6 +11,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.CertificatePinner
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -37,5 +40,27 @@ object AppModule {
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+    }
+
+    @Provides
+    fun provideOkHttpClient() : OkHttpClient {
+        val certificatePinner = CertificatePinner.Builder()
+            .add(
+                "www.example.com",
+                "sha256/ZC3lTYTDBJQVf1P2V7+fibTqbIsWNR/X7CWNVW+CEEA="
+            ).build()
+
+        return OkHttpClient.Builder()
+            .certificatePinner(certificatePinner)
+            .build()
+    }
+
+    @Provides
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient
+    ) : Retrofit {
+        return Retrofit.Builder()
+            .client(okHttpClient)
+            .build()
     }
 }
